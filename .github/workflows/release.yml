@@ -31,6 +31,7 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
         run: |
+          go mod download
           go build -ldflags="-s -w" -o probe-${{ matrix.file_suffix }} main.go
 
       - name: Upload artifact
