@@ -1,0 +1,6 @@
+# probe
+*.db
+*.db-shm
+*.db-wal
+probe
+probe.exe
