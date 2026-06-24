@@ -1074,44 +1074,20 @@ table tr:hover td{background:rgba(56,189,248,0.04)}
 <div><div class="label" style="font-size:11px;color:#64748b">下载</div><div class="val" style="color:#38bdf8">{{.MonthRx | formatBytes}}</div></div>
 <div><div class="label" style="font-size:11px;color:#64748b">上传</div><div class="val" style="color:#a78bfa">{{.MonthTx | formatBytes}}</div></div>
 </div>
-<div class="traffic-grid" style="margin-top:8px">
-<div><div class="label" style="font-size:11px;color:#64748b">今日下载</div><div class="val" style="font-size:14px;color:#94a3b8">{{.TodayRx | formatBytes}}</div></div>
-<div><div class="label" style="font-size:11px;color:#64748b">今日上传</div><div class="val" style="font-size:14px;color:#94a3b8">{{.TodayTx | formatBytes}}</div></div>
-</div>
 <div class="sub" style="margin-top:6px">本月合计: {{add .MonthRx .MonthTx | formatBytes}} &middot; 每月1号自动清零</div>
 </div>
 </div>
 
-<!-- 两张流量图表并排 -->
-<div class="charts" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+<!-- 历史月度流量图表 -->
 <div class="panel">
-<h3>&#128200; 本月每日流量 ({{.MonthKey}})</h3>
+<h3>&#128201; 历史月度流量</h3>
 <div class="tags">
 {{range .Interfaces}}<span class="tag">{{.}}</span>{{end}}
 </div>
-<canvas id="dailyChart"></canvas>
-</div>
-<div class="panel">
-<h3>&#128201; 历史月度流量</h3>
 <canvas id="monthlyChart"></canvas>
 </div>
-</div>
 
-<!-- 每日 + 每月明细表 -->
-<div class="charts" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-<div class="panel">
-<h3>&#128204; 每日流量明细</h3>
-<table>
-<thead><tr><th>日期</th><th>下载</th><th>上传</th><th>合计</th></tr></thead>
-<tbody>
-{{range .DailyTraffic}}
-<tr><td>{{.Date}}</td><td>{{.RxDelta | formatBytes}}</td><td>{{.TxDelta | formatBytes}}</td><td>{{add .RxDelta .TxDelta | formatBytes}}</td></tr>
-{{else}}
-<tr><td colspan="4" style="color:#64748b;text-align:center">正在采集数据...</td></tr>
-{{end}}
-</tbody>
-</table>
-</div>
+<!-- 月度流量统计表 -->
 <div class="panel">
 <h3>&#128202; 月度流量统计</h3>
 <table>
@@ -1125,7 +1101,6 @@ table tr:hover td{background:rgba(56,189,248,0.04)}
 </tbody>
 </table>
 </div>
-</div>
 
 <div class="footer">
 最近采集: {{.LastCollectTime}} &middot; 数据每10秒更新 &middot; probe v1.1
@@ -1133,21 +1108,6 @@ table tr:hover td{background:rgba(56,189,248,0.04)}
 </div>
 
 <script>
-// 本月每日流量
-const dailyData = [{{range .DailyTraffic}}{date:"{{.Date}}",rx:{{.RxDelta}},tx:{{.TxDelta}}},{{end}}];
-(function(){
-	var ctx = document.getElementById('dailyChart');
-	if(!ctx||dailyData.length===0)return;
-	var labels = dailyData.map(function(d){return d.date.slice(-5)});
-	var rx = dailyData.map(function(d){return d.rx});
-	var tx = dailyData.map(function(d){return d.tx});
-	new Chart(ctx,{type:'bar',data:{labels:labels,datasets:[
-		{label:'下载',data:rx,backgroundColor:'#38bdf8',borderRadius:4},
-		{label:'上传',data:tx,backgroundColor:'#a78bfa',borderRadius:4}
-	]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#94a3b8'}}},
-	scales:{x:{ticks:{color:'#64748b'}},y:{ticks:{color:'#64748b',callback:function(v){return fmtB(v)}}}}}});
-})();
-
 // 历史月度流量
 const monthlyData = [{{range .MonthlyHistory}}{month:"{{.MonthKey}}",rx:{{.RxDelta}},tx:{{.TxDelta}}},{{end}}];
 (function(){
