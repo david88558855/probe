@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/hex"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"html/template"
 	"log"
@@ -26,19 +27,26 @@ import (
 
 // ====== 配置 ======
 var (
-	ProbeIP      = getEnv("PROBE_IP", "0.0.0.0")
-	ProbePort    = getEnv("PROBE_PORT", "8082")
-	ListenAddr   = ProbeIP + ":" + ProbePort
-	DBPath       = getEnv("PROBE_DB", "/root/probe/probe.db")
+	cliIP       = flag.String("ip", "", "监听 IP 地址")
+	cliPort     = flag.String("port", "", "监听端口")
+	cliDB       = flag.String("db", "", "SQLite 数据库路径")
+	cliPassword = flag.String("password", "", "默认管理员密码")
+
+	ProbeIP      = "0.0.0.0"
+	ProbePort    = "8082"
+	DBPath       = "/root/probe/probe.db"
+	DefaultPassword = "admin"
 	PollInterval = 10 * time.Second
 	BcryptCost   = 12
 )
 
-func getEnv(k, def string) string {
-	if v := os.Getenv(k); v != "" {
-		return v
+func coalesce(args ...string) string {
+	for _, a := range args {
+		if a != "" {
+			return a
+		}
 	}
-	return def
+	return ""
 }
 
 // ====== 类型定义 ======
@@ -852,6 +860,18 @@ func init() {
 
 // ====== 主入口 ======
 func main() {
+	flag.Parse()
+
+	DBPath = coalesce(*cliDB, os.Getenv("PROBE_DB"), DBPath)
+	ProbeIP = coalesce(*cliIP, os.Getenv("PROBE_IP"), ProbeIP)
+	ProbePort = coalesce(*cliPort, os.Getenv("PROBE_PORT"), ProbePort)
+	DefaultPassword = coalesce(*cliPassword, os.Getenv("PROBE_PASSWORD"), DefaultPassword)
+	ListenAddr := fmt.Sprintf("%s:%s", ProbeIP, ProbePort)
+
+	if err := os.MkdirAll(filepath.Dir(DBPath), 0755); err != nil {
+		log.Fatalf("无法创建数据库目录: %v", err)
+	}
+
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
 	if err := initDB(); err != nil {
@@ -859,11 +879,7 @@ func main() {
 	}
 	defer db.Close()
 
-	password := os.Getenv("PROBE_PASSWORD")
-	if password == "" {
-		password = "admin"
-	}
-	if err := ensureDefaultUser(password); err != nil {
+	if err := ensureDefaultUser(DefaultPassword); err != nil {
 		log.Fatalf("用户初始化失败: %v", err)
 	}
 
@@ -893,7 +909,7 @@ func main() {
 	}
 
 	log.Printf("probe 启动在 %s", ListenAddr)
-	log.Printf("默认账号: admin / %s", password)
+	log.Printf("默认账号: admin / %s", DefaultPassword)
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("服务启动失败: %v", err)
 	}

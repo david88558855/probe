@@ -63,8 +63,14 @@ CGO_ENABLED=0 go build -ldflags="-s" -o probe main.go
 ### 运行
 
 ```bash
-# 直接运行
+# 默认启动（0.0.0.0:8082，密码 admin）
 ./probe
+
+# 命令行参数
+./probe -ip 127.0.0.1 -port 9090 -password mypass -db /data/probe.db
+
+# 或环境变量
+PROBE_IP=0.0.0.0 PROBE_PORT=8082 PROBE_PASSWORD=admin ./probe
 
 # systemd 开机自启（推荐）
 cat > /etc/systemd/system/probe.service << 'EOF'
@@ -90,14 +96,16 @@ systemctl enable --now probe
 
 访问 `http://<服务器IP>:8082`，默认账号 `admin` / `admin`。
 
-## 环境变量
+## 配置
 
-| 变量 | 默认值 | 说明 |
-|------|--------|------|
-| `PROBE_IP` | `0.0.0.0` | 监听 IP 地址 |
-| `PROBE_PORT` | `8082` | 监听端口 |
-| `PROBE_PASSWORD` | `admin` | 默认管理员密码 |
-| `PROBE_DB` | `/root/probe/probe.db` | SQLite 数据库路径 |
+优先级：**命令行参数 > 环境变量 > 默认值**
+
+| 命令行 | 环境变量 | 默认值 | 说明 |
+|--------|----------|--------|------|
+| `-ip` | `PROBE_IP` | `0.0.0.0` | 监听 IP 地址 |
+| `-port` | `PROBE_PORT` | `8082` | 监听端口 |
+| `-password` | `PROBE_PASSWORD` | `admin` | 默认管理员密码 |
+| `-db` | `PROBE_DB` | `/root/probe/probe.db` | SQLite 数据库路径 |
 
 ## API
 
