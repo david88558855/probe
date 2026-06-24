@@ -94,7 +94,8 @@ systemctl enable --now probe
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `PROBE_LISTEN` | `:8082` | 监听地址 |
+| `PROBE_IP` | `0.0.0.0` | 监听 IP 地址 |
+| `PROBE_PORT` | `8082` | 监听端口 |
 | `PROBE_PASSWORD` | `admin` | 默认管理员密码 |
 | `PROBE_DB` | `/root/probe/probe.db` | SQLite 数据库路径 |
 

@@ -26,7 +26,9 @@ import (
 
 // ====== 配置 ======
 var (
-	ListenAddr   = getEnv("PROBE_LISTEN", ":8082")
+	ProbeIP      = getEnv("PROBE_IP", "0.0.0.0")
+	ProbePort    = getEnv("PROBE_PORT", "8082")
+	ListenAddr   = ProbeIP + ":" + ProbePort
 	DBPath       = getEnv("PROBE_DB", "/root/probe/probe.db")
 	PollInterval = 10 * time.Second
 	BcryptCost   = 12
