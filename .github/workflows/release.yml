@@ -1,4 +1,4 @@
-name: Release
+name: Build
 
 on:
   workflow_dispatch:
@@ -39,24 +39,3 @@ jobs:
         with:
           name: probe-${{ matrix.file_suffix }}
           path: probe-${{ matrix.file_suffix }}
-
-  release:
-    name: Create Release
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: probe-*
-          merge-multiple: true
-
-      - name: Release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            probe-linux-amd64
-            probe-linux-arm64
-          generate_release_notes: true
